@@ -135,3 +135,17 @@ func AddMoney(
 
 	return account1, account2, nil
 }
+
+func (s *Store) DeleteAccountTx(ctx context.Context, id int64) error {
+	err := s.execTx(ctx, func(q *Queries) error {
+		return q.DeleteAccount(ctx, id)
+	})
+	return err
+}
+
+func (s *Store) DeleteAllAccountsTx(ctx context.Context) error {
+	err := s.execTx(ctx, func(q *Queries) error {
+		return q.DeleteAllAccounts(ctx)
+	})
+	return err
+}

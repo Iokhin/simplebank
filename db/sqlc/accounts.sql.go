@@ -72,6 +72,15 @@ func (q *Queries) DeleteAccount(ctx context.Context, id int64) error {
 	return err
 }
 
+const deleteAllAccounts = `-- name: DeleteAllAccounts :exec
+DELETE FROM accounts
+`
+
+func (q *Queries) DeleteAllAccounts(ctx context.Context) error {
+	_, err := q.db.ExecContext(ctx, deleteAllAccounts)
+	return err
+}
+
 const getAccount = `-- name: GetAccount :one
 SELECT id, owner, balance, currency, created_at FROM accounts
 WHERE id = $1 LIMIT 1
@@ -127,7 +136,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Account
+	items := []Account{}
 	for rows.Next() {
 		var i Account
 		if err := rows.Scan(
