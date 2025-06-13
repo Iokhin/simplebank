@@ -3,7 +3,7 @@ package sqlc
 import (
 	"context"
 	"database/sql"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"simplebank/util"
 	"testing"
 )
@@ -19,10 +19,10 @@ func createRandomEntry(t *testing.T) Entry {
 		Amount:    account.Balance,
 	}
 	entry, err := testQueries.CreateEntry(context.Background(), params)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, entry)
-	assert.Equal(t, account.ID, entry.AccountID)
-	assert.Equal(t, account.Balance, entry.Amount)
+	require.NoError(t, err)
+	require.NotEmpty(t, entry)
+	require.Equal(t, account.ID, entry.AccountID)
+	require.Equal(t, account.Balance, entry.Amount)
 
 	return entry
 }
@@ -30,12 +30,12 @@ func createRandomEntry(t *testing.T) Entry {
 func TestQueries_GetEntry(t *testing.T) {
 	entry := createRandomEntry(t)
 	get, err := testQueries.GetEntry(context.Background(), entry.ID)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, get)
-	assert.Equal(t, entry.ID, get.ID)
-	assert.Equal(t, entry.AccountID, get.AccountID)
-	assert.Equal(t, entry.Amount, get.Amount)
-	assert.Equal(t, entry.CreatedAt, get.CreatedAt)
+	require.NoError(t, err)
+	require.NotEmpty(t, get)
+	require.Equal(t, entry.ID, get.ID)
+	require.Equal(t, entry.AccountID, get.AccountID)
+	require.Equal(t, entry.Amount, get.Amount)
+	require.Equal(t, entry.CreatedAt, get.CreatedAt)
 }
 
 func TestQueries_UpdateEntry(t *testing.T) {
@@ -45,19 +45,19 @@ func TestQueries_UpdateEntry(t *testing.T) {
 		Amount: util.RandomMoney(),
 	}
 	update, err := testQueries.UpdateEntry(context.Background(), params)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, update)
-	assert.Equal(t, params.ID, update.ID)
-	assert.Equal(t, params.Amount, update.Amount)
+	require.NoError(t, err)
+	require.NotEmpty(t, update)
+	require.Equal(t, params.ID, update.ID)
+	require.Equal(t, params.Amount, update.Amount)
 }
 
 func TestQueries_DeleteEntry(t *testing.T) {
 	entry := createRandomEntry(t)
 	err := testQueries.DeleteEntry(context.Background(), entry.ID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	get, err := testQueries.GetEntry(context.Background(), entry.ID)
-	assert.Error(t, err, sql.ErrNoRows.Error())
-	assert.Empty(t, get)
+	require.Error(t, err, sql.ErrNoRows.Error())
+	require.Empty(t, get)
 }
 
 func TestQueries_ListEntries(t *testing.T) {
@@ -70,11 +70,11 @@ func TestQueries_ListEntries(t *testing.T) {
 		Offset: 5,
 	})
 
-	assert.NoError(t, err)
-	assert.NotEmpty(t, entries)
-	assert.Equal(t, 5, len(entries))
+	require.NoError(t, err)
+	require.NotEmpty(t, entries)
+	require.Equal(t, 5, len(entries))
 
 	for _, entry := range entries {
-		assert.NotEmpty(t, entry)
+		require.NotEmpty(t, entry)
 	}
 }

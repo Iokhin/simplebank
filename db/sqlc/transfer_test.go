@@ -3,7 +3,7 @@ package sqlc
 import (
 	"context"
 	"database/sql"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 	"time"
 )
@@ -21,11 +21,11 @@ func createRandomTransfer(t *testing.T) Transfer {
 		Amount:        account1.Balance,
 	}
 	transfer, err := testQueries.CreateTransfer(context.Background(), createTransferParams)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, transfer)
-	assert.Equal(t, account1.ID, transfer.FromAccountID)
-	assert.Equal(t, account2.ID, transfer.ToAccountID)
-	assert.Equal(t, account1.Balance, transfer.Amount)
+	require.NoError(t, err)
+	require.NotEmpty(t, transfer)
+	require.Equal(t, account1.ID, transfer.FromAccountID)
+	require.Equal(t, account2.ID, transfer.ToAccountID)
+	require.Equal(t, account1.Balance, transfer.Amount)
 
 	return transfer
 }
@@ -33,13 +33,13 @@ func createRandomTransfer(t *testing.T) Transfer {
 func TestQueries_GetTransfer(t *testing.T) {
 	transfer := createRandomTransfer(t)
 	get, err := testQueries.GetTransfer(context.Background(), transfer.ID)
-	assert.NoError(t, err)
-	assert.NotEmpty(t, get)
-	assert.Equal(t, transfer.ID, get.ID)
-	assert.Equal(t, transfer.FromAccountID, get.FromAccountID)
-	assert.Equal(t, transfer.ToAccountID, get.ToAccountID)
-	assert.Equal(t, transfer.Amount, get.Amount)
-	assert.WithinDuration(t, transfer.CreatedAt, get.CreatedAt, time.Second)
+	require.NoError(t, err)
+	require.NotEmpty(t, get)
+	require.Equal(t, transfer.ID, get.ID)
+	require.Equal(t, transfer.FromAccountID, get.FromAccountID)
+	require.Equal(t, transfer.ToAccountID, get.ToAccountID)
+	require.Equal(t, transfer.Amount, get.Amount)
+	require.WithinDuration(t, transfer.CreatedAt, get.CreatedAt, time.Second)
 }
 
 func TestQueries_ListTransfers(t *testing.T) {
@@ -50,19 +50,19 @@ func TestQueries_ListTransfers(t *testing.T) {
 		Limit:  5,
 		Offset: 5,
 	})
-	assert.NoError(t, err)
-	assert.NotEmpty(t, transfers)
-	assert.Equal(t, 5, len(transfers))
+	require.NoError(t, err)
+	require.NotEmpty(t, transfers)
+	require.Equal(t, 5, len(transfers))
 	for _, transfer := range transfers {
-		assert.NotEmpty(t, transfer)
+		require.NotEmpty(t, transfer)
 	}
 }
 
 func TestQueries_DeleteTransfer(t *testing.T) {
 	transfer := createRandomTransfer(t)
 	err := testQueries.DeleteTransfer(context.Background(), transfer.ID)
-	assert.NoError(t, err)
+	require.NoError(t, err)
 	get, err := testQueries.GetTransfer(context.Background(), transfer.ID)
-	assert.Error(t, err, sql.ErrNoRows.Error())
-	assert.Empty(t, get)
+	require.Error(t, err, sql.ErrNoRows.Error())
+	require.Empty(t, get)
 }
