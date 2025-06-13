@@ -6,19 +6,25 @@ import (
 	"fmt"
 )
 
-type Store struct {
+type Store interface {
+	Querier
+	TransferTx(ctx context.Context, arg TransferTxParam) (TransferTxResult, error)
+	DeleteAccountTx(ctx context.Context, id int64) error
+	DeleteAllAccountsTx(ctx context.Context) error
+}
+type SQLStore struct {
 	*Queries
 	db *sql.DB
 }
 
-func NewStore(db *sql.DB) *Store {
-	return &Store{
+func NewStore(db *sql.DB) Store {
+	return &SQLStore{
 		db:      db,
 		Queries: New(db),
 	}
 }
 
-func (s *Store) execTx(ctx context.Context, fn func(*Queries) error) error {
+func (s *SQLStore) execTx(ctx context.Context, fn func(*Queries) error) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -49,7 +55,7 @@ type TransferTxResult struct {
 	ToEntry     Entry    `json:"toEntry"`
 }
 
-func (s *Store) TransferTx(ctx context.Context, arg TransferTxParam) (TransferTxResult, error) {
+func (s *SQLStore) TransferTx(ctx context.Context, arg TransferTxParam) (TransferTxResult, error) {
 	var result TransferTxResult
 
 	err := s.execTx(ctx, func(q *Queries) error {
@@ -136,14 +142,14 @@ func AddMoney(
 	return account1, account2, nil
 }
 
-func (s *Store) DeleteAccountTx(ctx context.Context, id int64) error {
+func (s *SQLStore) DeleteAccountTx(ctx context.Context, id int64) error {
 	err := s.execTx(ctx, func(q *Queries) error {
 		return q.DeleteAccount(ctx, id)
 	})
 	return err
 }
 
-func (s *Store) DeleteAllAccountsTx(ctx context.Context) error {
+func (s *SQLStore) DeleteAllAccountsTx(ctx context.Context) error {
 	err := s.execTx(ctx, func(q *Queries) error {
 		return q.DeleteAllAccounts(ctx)
 	})
